@@ -1,46 +1,44 @@
-\# Coding Game App
+#  Coding Game App
 
+##  Project Structure
 
+A gamified mobile app for learning programming.
 
-Gamified mobile app for learning programming.
+```text
+Coding-Game-App/
+├── android/       # Android app (Java, Retrofit)
+├── api/           # ASP.NET Core REST API (C#, EF Core)
+├── sandbox/       # Docker grader (Python runner)
+├── database/      # SQL creation and seed scripts
+└── docs/          # UML, Swagger/Postman exports, slides
+```
 
+## 🚀 Run Locally
 
+### 1. Database
 
-\## Structure
+1. Run `database/schema.sql`.
+2. Run `database/seed.sql`.
 
-\- `android/`  Android app (Java, Retrofit)
+### 2. API
 
-\- `api/`      ASP.NET Core REST API (C#, EF Core)
+1. Copy `api/appsettings.Example.json` to `api/appsettings.json`.
+2. Fill in your DB connection string and JWT key.
+3. Navigate to the API directory and start the application:
 
-\- `sandbox/`  Docker grader (Python runner)
+   ```bash
+   cd api && dotnet run
+   ```
 
-\- `database/` SQL creation and seed scripts
+### 3. Sandbox
 
-\- `docs/`     UML, Swagger/Postman exports, slides
+1. Navigate to the sandbox directory and build the Docker image:
 
+   ```bash
+   cd sandbox && docker build -t py-grader .
+   ```
 
+### 4. Android
 
-\## Run locally
-
-\### Database
-
-1\. Run `database/schema.sql`, then `database/seed.sql`
-
-\### API
-
-1\. Copy `api/appsettings.Example.json` to `api/appsettings.json`
-
-2\. Fill in your DB connection string and JWT key
-
-3\. `cd api \&\& dotnet run`
-
-\### Sandbox
-
-1\. `cd sandbox \&\& docker build -t py-grader .`
-
-\### Android
-
-1\. Copy `android/local.properties.example` to `android/local.properties`
-
-2\. Open `android/` in Android Studio
-
+1. Copy `android/local.properties.example` to `android/local.properties`.
+2. Open `android/` in Android Studio.
