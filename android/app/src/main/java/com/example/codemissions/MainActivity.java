@@ -141,8 +141,8 @@ public class MainActivity extends AppCompatActivity {
                 });
     }
 
-    private void openMissions() {
-        startActivity(new Intent(this, MissionsActivity.class));
+    private void openLevels() {
+        startActivity(new Intent(this, LevelsActivity.class));
         finish();
     }
 }
