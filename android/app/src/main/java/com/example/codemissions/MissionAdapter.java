@@ -38,8 +38,18 @@ public class MissionAdapter extends BaseAdapter {
         ((TextView) convertView.findViewById(R.id.txtMissionTitle)).setText(m.getTitle());
         ((TextView) convertView.findViewById(R.id.txtMissionInfo))
                 .setText(m.getDifficulty() + " - " + m.getXp() + " XP");
-        ((TextView) convertView.findViewById(R.id.txtMissionStatus))
-                .setText(m.isSolved() ? "Solved" : "To do");
+
+        TextView status = convertView.findViewById(R.id.txtMissionStatus);
+        if (m.isSolved()) {
+            status.setText("\u2714 Completed");
+            convertView.setAlpha(1f);
+        } else if (!m.isUnlocked()) {
+            status.setText("\uD83D\uDD12 Locked");
+            convertView.setAlpha(0.5f);
+        } else {
+            status.setText("To do");
+            convertView.setAlpha(1f);
+        }
         return convertView;
     }
 }

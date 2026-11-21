@@ -49,4 +49,14 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
         android:textColor="#E53E3E" />
+
+    <TextView
+        android:id="@+id/btnForgot"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:padding="8dp"
+        android:text="Forgot password?"
+        android:textColor="#2B6CB0"
+        android:textStyle="bold" />
 </LinearLayout>

@@ -74,10 +74,13 @@ public class MissionActivity extends AppCompatActivity {
         if (ApiClient.USE_MOCK_DATA) {
             new Handler(Looper.getMainLooper()).postDelayed(() -> {
                 boolean ok = code.contains("print");
+                boolean firstTime = !Session.isSolved(this, missionId);
+                int gained = (ok && firstTime) ? missionXp : 0;
+                if (ok) Session.markSolved(this, missionId);
                 showResult(ok ? "passed" : "failed",
                         ok ? "All tests passed." : "The output does not match the expected result.",
-                        ok ? missionXp : 0,
-                        Session.getXp(this) + (ok ? missionXp : 0));
+                        gained,
+                        Session.getXp(this) + gained);
                 setRunning(false);
             }, 1200);
             return;

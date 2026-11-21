@@ -22,9 +22,8 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // Already logged in: go straight to the missions list
         if (Session.isLoggedIn(this)) {
-            openMissions();
+            openLevels();
             return;
         }
 
@@ -35,9 +34,12 @@ public class MainActivity extends AppCompatActivity {
         txtStatus = findViewById(R.id.txtLoginStatus);
         btnLogin = findViewById(R.id.btnLogin);
         btnRegister = findViewById(R.id.btnRegister);
+        TextView btnForgot = findViewById(R.id.btnForgot);
 
         btnLogin.setOnClickListener(v -> login());
         btnRegister.setOnClickListener(v -> register());
+        btnForgot.setOnClickListener(v ->
+                startActivity(new Intent(this, ResetPasswordActivity.class)));
     }
 
     private JSONObject credentials() throws JSONException {
@@ -58,12 +60,17 @@ public class MainActivity extends AppCompatActivity {
 
     private void login() {
         if (!fieldsOk()) return;
+        txtStatus.setText("");
+
         if (ApiClient.USE_MOCK_DATA) {
-            Session.save(this, "mock-token", edtEmail.getText().toString().trim(), 0);
-            openMissions();
+            String email = edtEmail.getText().toString().trim();
+            // Mock: an e-mail starting with "admin" gets the admin role
+            String role = email.toLowerCase().startsWith("admin") ? "admin" : "player";
+            Session.save(this, "mock-token", email, 0, role);
+            openLevels();
             return;
         }
-        txtStatus.setText("");
+
         btnLogin.setEnabled(false);
         try {
             ApiClient.getInstance(this).postObject("/auth/login", credentials(),
@@ -76,8 +83,9 @@ public class MainActivity extends AppCompatActivity {
                         }
                         Session.save(this, token,
                                 response.optString("email", edtEmail.getText().toString().trim()),
-                                response.optInt("xp", 0));
-                        openMissions();
+                                response.optInt("xp", 0),
+                                response.optString("role", "player"));
+                        openLevels();
                     },
                     error -> {
                         btnLogin.setEnabled(true);
@@ -92,6 +100,13 @@ public class MainActivity extends AppCompatActivity {
     private void register() {
         if (!fieldsOk()) return;
         txtStatus.setText("");
+
+        if (ApiClient.USE_MOCK_DATA) {
+            Toast.makeText(this, "Account created (mock). You can log in now.",
+                    Toast.LENGTH_LONG).show();
+            return;
+        }
+
         try {
             ApiClient.getInstance(this).postObject("/auth/register", credentials(),
                     response -> Toast.makeText(this,
@@ -103,8 +118,8 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void openMissions() {
-        startActivity(new Intent(this, MissionsActivity.class));
+    private void openLevels() {
+        startActivity(new Intent(this, LevelsActivity.class));
         finish();
     }
 }
