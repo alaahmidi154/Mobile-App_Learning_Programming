@@ -9,6 +9,7 @@ import com.android.volley.Response;
 import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
+import com.android.volley.DefaultRetryPolicy;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -17,7 +18,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class ApiClient {
-
+    public static final boolean USE_MOCK_DATA = true; // set to false when the API is ready
     // Emulator: 10.0.2.2 ; real phone: the PC's IP on the same Wi-Fi
     public static final String BASE_URL = "http://10.0.2.2:5000";
 
@@ -56,6 +57,8 @@ public class ApiClient {
                 return authHeaders();
             }
         };
+        // 20 s timeout, no automatic retry (avoids submitting the code twice)
+        req.setRetryPolicy(new DefaultRetryPolicy(20000, 0, 1f));
         queue.add(req);
     }
 

@@ -58,6 +58,11 @@ public class MainActivity extends AppCompatActivity {
 
     private void login() {
         if (!fieldsOk()) return;
+        if (ApiClient.USE_MOCK_DATA) {
+            Session.save(this, "mock-token", edtEmail.getText().toString().trim(), 0);
+            openMissions();
+            return;
+        }
         txtStatus.setText("");
         btnLogin.setEnabled(false);
         try {
