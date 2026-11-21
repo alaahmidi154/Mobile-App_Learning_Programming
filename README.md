@@ -13,7 +13,7 @@ Coding-Game-App/
 └── docs/          # UML, Swagger/Postman exports, slides
 ```
 
-## 🚀 Run Locally
+##  Run Locally
 
 ### 1. Database
 
