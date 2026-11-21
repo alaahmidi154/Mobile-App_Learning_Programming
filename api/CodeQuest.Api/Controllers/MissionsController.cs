@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using CodeQuest.Api.Models;
+using CodeQuest.Api.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -13,9 +14,18 @@ public record SubmitRequest(string Code);
 [Route("api/missions")]
 public class MissionsController : ControllerBase
 {
-    private readonly AppDbContext _db;
+    private const int MaxCodeLength = 20_000;
 
-    public MissionsController(AppDbContext db) => _db = db;
+    private readonly AppDbContext _db;
+    private readonly ISandboxRunner _sandbox;
+    private readonly ILogger<MissionsController> _log;
+
+    public MissionsController(AppDbContext db, ISandboxRunner sandbox, ILogger<MissionsController> log)
+    {
+        _db = db;
+        _sandbox = sandbox;
+        _log = log;
+    }
 
     [HttpGet]
     public async Task<IActionResult> GetAll()
@@ -58,10 +68,34 @@ public class MissionsController : ControllerBase
         if (mission == null) return NotFound(new { message = "Mission introuvable." });
         if (string.IsNullOrWhiteSpace(req.Code))
             return BadRequest(new { message = "Code vide." });
+        if (req.Code.Length > MaxCodeLength)
+            return BadRequest(new { message = "Code trop long." });
 
-        // STUB : à remplacer par l'appel au moteur Docker (Isra)
-        var verdict = "réussi";
-        var tempsMs = 140;
+        // ALL tests (visible and hidden) go to the sandbox.
+        var tests = await _db.Set<Test>()
+            .Where(t => t.IdMission == id)
+            .OrderBy(t => t.Id)
+            .Select(t => new SandboxTest(t.Entree, t.SortieAttendue))
+            .ToListAsync();
+
+        if (tests.Count == 0)
+            return Conflict(new { message = "Cette mission n'a pas encore de tests." });
+
+        SandboxResult result;
+        try
+        {
+            result = await _sandbox.RunAsync(req.Code, tests, HttpContext.RequestAborted);
+        }
+        catch (SandboxUnavailableException ex)
+        {
+            // Docker closed / runner broken: not the student's fault, nothing is saved.
+            _log.LogError(ex, "Sandbox indisponible pour la mission {MissionId}", id);
+            return StatusCode(StatusCodes.Status503ServiceUnavailable,
+                new { message = "Service de correction indisponible. Réessayez dans un instant." });
+        }
+
+        var verdict = result.Verdict;
+        var tempsMs = result.TempsExecutionMs;
 
         var dejaReussie = await _db.Set<Soumission>().AnyAsync(s =>
             s.IdUtilisateur == userId && s.IdMission == id && s.Verdict == "réussi");
@@ -87,13 +121,17 @@ public class MissionsController : ControllerBase
         });
         await _db.SaveChangesAsync();
 
+        var message = verdict == "réussi"
+            ? (xpGagnes > 0 ? "Bravo !" : "Déjà réussie, pas de XP supplémentaire.")
+            : result.Message;
+
         return Ok(new
         {
             verdict,
             tempsExecutionMs = tempsMs,
             xpGagnes,
             xpTotal = user.XpTotal,
-            message = xpGagnes > 0 ? "Bravo !" : "Déjà réussie, pas de XP supplémentaire."
+            message
         });
     }
 }

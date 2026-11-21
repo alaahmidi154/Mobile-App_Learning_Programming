@@ -18,6 +18,7 @@ public class LeaderboardController : ControllerBase
     public async Task<IActionResult> Get()
     {
         var users = await _db.Set<Utilisateur>()
+            .Where(u => u.Role == "joueur")
             .OrderByDescending(u => u.XpTotal)
             .ThenBy(u => u.Id)
             .Take(50)
