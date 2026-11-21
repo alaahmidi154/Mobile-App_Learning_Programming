@@ -18,9 +18,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class ApiClient {
-    public static final boolean USE_MOCK_DATA = true; // set to false when the API is ready
-    // Emulator: 10.0.2.2 ; real phone: the PC's IP on the same Wi-Fi
-    public static final String BASE_URL = "http://10.0.2.2:5000";
+    public static final boolean USE_MOCK_DATA = false; // true = demo mode without server (fake data)
+    // Emulator: 10.0.2.2 ; real phone: http://<PC IP>:5007/api (same Wi-Fi, firewall port 5007 open)
+    public static final String BASE_URL = "http://10.0.2.2:5007/api";
 
     private static ApiClient instance;
     private final RequestQueue queue;

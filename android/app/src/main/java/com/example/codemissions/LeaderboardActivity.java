@@ -1,7 +1,6 @@
 package com.example.codemissions;
 
 import android.os.Bundle;
-import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -15,8 +14,8 @@ import java.util.List;
 
 public class LeaderboardActivity extends AppCompatActivity {
 
-    private final List<String> rows = new ArrayList<>();
-    private ArrayAdapter<String> adapter;
+    private final List<LeaderboardAdapter.Row> rows = new ArrayList<>();
+    private LeaderboardAdapter adapter;
     private TextView txtStatus;
 
     @Override
@@ -26,7 +25,7 @@ public class LeaderboardActivity extends AppCompatActivity {
 
         txtStatus = findViewById(R.id.txtLeaderboardStatus);
         ListView listView = findViewById(R.id.listViewLeaderboard);
-        adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, rows);
+        adapter = new LeaderboardAdapter(this, rows);
         listView.setAdapter(adapter);
 
         loadLeaderboard();
@@ -35,9 +34,10 @@ public class LeaderboardActivity extends AppCompatActivity {
     private void loadLeaderboard() {
         if (ApiClient.USE_MOCK_DATA) {
             rows.clear();
-            rows.add("1. alice@test.com - 120 XP");
-            rows.add("2. bob@test.com - 85 XP");
-            rows.add("3. " + Session.getEmail(this) + " - " + Session.getXp(this) + " XP");
+            rows.add(new LeaderboardAdapter.Row(1, "Alice", 220, 3));
+            rows.add(new LeaderboardAdapter.Row(2, "Bob", 150, 2));
+            rows.add(new LeaderboardAdapter.Row(3, Session.getName(this),
+                    Session.getXp(this), Session.getLevel(this)));
             adapter.notifyDataSetChanged();
             return;
         }
@@ -48,11 +48,19 @@ public class LeaderboardActivity extends AppCompatActivity {
                     for (int i = 0; i < response.length(); i++) {
                         JSONObject o = response.optJSONObject(i);
                         if (o == null) continue;
-                        rows.add((i + 1) + ". " + o.optString("email")
-                                + " - " + o.optInt("xp") + " XP");
+                        // API contract: rang, nom, xpTotal, niveauJoueur
+                        rows.add(new LeaderboardAdapter.Row(
+                                o.optInt("rang", i + 1),
+                                o.optString("nom"),
+                                o.optInt("xpTotal"),
+                                o.optInt("niveauJoueur", 1)));
                     }
                     adapter.notifyDataSetChanged();
+                    if (rows.isEmpty()) txtStatus.setText("Aucun joueur pour le moment.");
                 },
-                error -> txtStatus.setText(ErrorUtils.message(error)));
+                error -> {
+                    if (ErrorUtils.handleUnauthorized(this, error)) return;
+                    txtStatus.setText(ErrorUtils.message(error));
+                });
     }
 }

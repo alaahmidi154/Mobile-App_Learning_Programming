@@ -2,4 +2,31 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+
+    <!-- Brand -->
+    <color name="brand_primary">#4F46E5</color>
+    <color name="brand_primary_dark">#A5B4FC</color>
+    <color name="brand_on_primary_dark">#1E1B4B</color>
+
+    <!-- Verdicts -->
+    <color name="verdict_success">#2F9E5B</color>
+    <color name="verdict_fail">#D9822B</color>
+    <color name="verdict_error">#D64545</color>
+    <color name="verdict_timeout">#6B7280</color>
+
+    <!-- Difficulties -->
+    <color name="diff_easy">#2F9E5B</color>
+    <color name="diff_medium">#D9822B</color>
+    <color name="diff_hard">#D64545</color>
+
+    <!-- Code editor (dark in both themes, like a terminal) -->
+    <color name="editor_bg">#1E1E2E</color>
+    <color name="editor_text">#E6E6F0</color>
+    <color name="editor_hint">#80E6E6F0</color>
+
+    <!-- Leaderboard -->
+    <color name="rank_gold">#D4A017</color>
+    <color name="rank_silver">#9CA3AF</color>
+    <color name="rank_bronze">#B7791F</color>
+    <color name="highlight_me">#334F46E5</color>
 </resources>

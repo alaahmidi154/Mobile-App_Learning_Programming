@@ -9,7 +9,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:padding="16dp"
-        android:text="user - 0 XP"
+        android:text="Joueur"
         android:textStyle="bold" />
 
     <LinearLayout
@@ -24,7 +24,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Ranking" />
+            android:text="Classement" />
 
         <Button
             android:id="@+id/btnAdmin"
@@ -39,7 +39,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Log out" />
+            android:text="Déconnexion" />
     </LinearLayout>
 
     <TextView
@@ -47,7 +47,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:padding="16dp"
-        android:textColor="#E53E3E" />
+        android:textColor="?attr/colorError" />
 
     <ListView
         android:id="@+id/listViewLevels"

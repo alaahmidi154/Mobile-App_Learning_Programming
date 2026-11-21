@@ -1,6 +1,5 @@
 package com.example.codemissions;
 
-import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -12,15 +11,21 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
+
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.text.Normalizer;
 
 public class MissionActivity extends AppCompatActivity {
 
     private int missionId;
     private int missionXp;
-    private TextView txtTitle, txtDesc, txtVerdict, txtMessage, txtXp;
+    private String missionDifficulty;
+    private TextView txtTitle, txtMeta, txtDesc;
     private EditText edtCode;
     private Button btnRun;
     private ProgressBar progress;
@@ -31,42 +36,54 @@ public class MissionActivity extends AppCompatActivity {
         setContentView(R.layout.activity_mission);
 
         txtTitle = findViewById(R.id.txtMissionTitle);
+        txtMeta = findViewById(R.id.txtMissionMeta);
         txtDesc = findViewById(R.id.txtMissionDescription);
-        txtVerdict = findViewById(R.id.txtVerdict);
-        txtMessage = findViewById(R.id.txtVerdictMessage);
-        txtXp = findViewById(R.id.txtXpGained);
         edtCode = findViewById(R.id.edtCode);
         btnRun = findViewById(R.id.btnRun);
         progress = findViewById(R.id.progressRun);
 
         missionId = getIntent().getIntExtra("mission_id", -1);
-        missionXp = getIntent().getIntExtra("mission_xp", 10);
+        missionXp = getIntent().getIntExtra("mission_xp", 0);
+        missionDifficulty = getIntent().getStringExtra("mission_difficulty");
         txtTitle.setText(getIntent().getStringExtra("mission_title"));
+        updateMeta();
 
         btnRun.setOnClickListener(v -> runCode());
         loadMission();
     }
 
+    private void updateMeta() {
+        String difficulty = missionDifficulty == null ? "" : missionDifficulty;
+        txtMeta.setText(difficulty + " · +" + missionXp + " XP");
+        txtMeta.setTextColor(Mission.difficultyColor(this, difficulty));
+    }
+
     private void loadMission() {
         if (ApiClient.USE_MOCK_DATA) {
-            txtDesc.setText("Write a Python program that solves this mission. "
-                    + "(Mock mode: the code passes if it contains 'print'.)");
-            edtCode.setText("# Write your code here\n");
+            txtDesc.setText("Écrivez un programme Python qui résout cette mission. "
+                    + "(Mode démo : le code est accepté s'il contient 'print'.)");
+            edtCode.setText("# Écrivez votre code ici\n");
             return;
         }
         ApiClient.getInstance(this).getObject("/missions/" + missionId,
                 response -> {
-                    txtTitle.setText(response.optString("title"));
-                    txtDesc.setText(response.optString("description"));
-                    edtCode.setText(response.optString("starter_code"));
+                    // API contract: id, titre, enonce, codeDepart, xp
+                    txtTitle.setText(response.optString("titre"));
+                    txtDesc.setText(response.optString("enonce"));
+                    edtCode.setText(response.optString("codeDepart"));
+                    missionXp = response.optInt("xp", missionXp);
+                    updateMeta();
                 },
-                error -> showResult("error", ErrorUtils.message(error), 0, Session.getXp(this)));
+                error -> {
+                    if (ErrorUtils.handleUnauthorized(this, error)) return;
+                    txtDesc.setText(ErrorUtils.message(error));
+                });
     }
 
     private void runCode() {
         final String code = edtCode.getText().toString();
         if (code.trim().isEmpty()) {
-            Toast.makeText(this, "Write some code first.", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Écrivez du code d'abord.", Toast.LENGTH_SHORT).show();
             return;
         }
         setRunning(true);
@@ -75,12 +92,12 @@ public class MissionActivity extends AppCompatActivity {
             new Handler(Looper.getMainLooper()).postDelayed(() -> {
                 boolean ok = code.contains("print");
                 boolean firstTime = !Session.isSolved(this, missionId);
-                int gained = (ok && firstTime) ? missionXp : 0;
                 if (ok) Session.markSolved(this, missionId);
-                showResult(ok ? "passed" : "failed",
-                        ok ? "All tests passed." : "The output does not match the expected result.",
-                        gained,
-                        Session.getXp(this) + gained);
+                showVerdict(ok ? "réussi" : "échoué",
+                        ok ? "Bravo !" : "Sortie incorrecte.",
+                        (ok && firstTime) ? missionXp : 0,
+                        Session.getXp(this) + ((ok && firstTime) ? missionXp : 0),
+                        ok ? 140 : 0);
                 setRunning(false);
             }, 1200);
             return;
@@ -92,44 +109,76 @@ public class MissionActivity extends AppCompatActivity {
             ApiClient.getInstance(this).postObject("/missions/" + missionId + "/submit", body,
                     response -> {
                         setRunning(false);
-                        showResult(response.optString("verdict", "error"),
+                        // API contract: verdict, tempsExecutionMs, xpGagnes, xpTotal, message
+                        showVerdict(response.optString("verdict", "erreur"),
                                 response.optString("message", ""),
-                                response.optInt("xp_gained", 0),
-                                response.optInt("total_xp", Session.getXp(this)));
+                                response.optInt("xpGagnes", 0),
+                                response.optInt("xpTotal", Session.getXp(this)),
+                                response.optInt("tempsExecutionMs", 0));
                     },
                     error -> {
                         setRunning(false);
-                        showResult("error", ErrorUtils.message(error), 0, Session.getXp(this));
+                        if (ErrorUtils.handleUnauthorized(this, error)) return;
+                        // Network error / 503 "service unavailable": not a verdict about the code
+                        showDialog("PROBLÈME", R.color.verdict_timeout,
+                                ErrorUtils.message(error), "", "");
                     });
         } catch (JSONException e) {
             setRunning(false);
-            showResult("error", "Internal error.", 0, Session.getXp(this));
+            showDialog("PROBLÈME", R.color.verdict_timeout, "Erreur interne.", "", "");
         }
     }
 
     private void setRunning(boolean running) {
         btnRun.setEnabled(!running);
         progress.setVisibility(running ? View.VISIBLE : View.GONE);
-        if (running) {
-            txtVerdict.setText("");
-            txtMessage.setText("");
-            txtXp.setText("");
-        }
     }
 
-    private void showResult(String verdict, String message, int xpGained, int totalXp) {
+    private void showVerdict(String verdict, String message, int xpGained, int totalXp, int timeMs) {
+        String v = Normalizer.normalize(verdict, Normalizer.Form.NFC);
         String label;
-        String color;
-        switch (verdict) {
-            case "passed":  label = "PASSED";              color = "#38A169"; break;
-            case "failed":  label = "FAILED";              color = "#DD6B20"; break;
-            case "timeout": label = "TIME LIMIT EXCEEDED"; color = "#718096"; break;
-            default:        label = "ERROR";               color = "#E53E3E"; break;
+        int color;
+        switch (v) {
+            case "réussi":        label = "RÉUSSI";        color = R.color.verdict_success; break;
+            case "échoué":        label = "ÉCHOUÉ";        color = R.color.verdict_fail;    break;
+            case "temps dépassé": label = "TEMPS DÉPASSÉ"; color = R.color.verdict_timeout; break;
+            default:              label = "ERREUR";        color = R.color.verdict_error;   break;
         }
-        txtVerdict.setText(label);
-        txtVerdict.setTextColor(Color.parseColor(color));
-        txtMessage.setText(message);
-        txtXp.setText(xpGained > 0 ? "+" + xpGained + " XP (total: " + totalXp + " XP)" : "");
-        Session.setXp(this, totalXp);
+
+        int oldLevel = Session.getLevel(this);
+        int newLevel = Session.levelFor(totalXp);
+        Session.setProgress(this, totalXp, newLevel);
+
+        String xpLine = "";
+        if (xpGained > 0) {
+            xpLine = "+" + xpGained + " XP (total : " + totalXp + " XP)";
+            if (newLevel > oldLevel) xpLine += "\nNiveau supérieur ! Niveau " + newLevel;
+        }
+        String timeLine = timeMs > 0 ? "Temps d'exécution : " + timeMs + " ms" : "";
+        showDialog(label, color, message, xpLine, timeLine);
+    }
+
+    private void showDialog(String label, int colorRes, String message, String xpLine, String timeLine) {
+        View view = getLayoutInflater().inflate(R.layout.dialog_verdict, null);
+        TextView txtLabel = view.findViewById(R.id.txtDialogVerdict);
+        txtLabel.setText(label);
+        txtLabel.setTextColor(ContextCompat.getColor(this, colorRes));
+        setTextOrHide((TextView) view.findViewById(R.id.txtDialogMessage), message);
+        setTextOrHide((TextView) view.findViewById(R.id.txtDialogXp), xpLine);
+        setTextOrHide((TextView) view.findViewById(R.id.txtDialogTime), timeLine);
+
+        new MaterialAlertDialogBuilder(this)
+                .setView(view)
+                .setPositiveButton("OK", null)
+                .show();
+    }
+
+    private static void setTextOrHide(TextView tv, String text) {
+        if (text == null || text.isEmpty()) {
+            tv.setVisibility(View.GONE);
+        } else {
+            tv.setText(text);
+            tv.setVisibility(View.VISIBLE);
+        }
     }
 }

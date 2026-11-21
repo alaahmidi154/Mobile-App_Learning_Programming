@@ -41,8 +41,8 @@ public class AdminActivity extends AppCompatActivity {
     private void loadUsers() {
         if (ApiClient.USE_MOCK_DATA) {
             rows.clear();
-            rows.add("alice@test.com (player) - 120 XP");
-            rows.add("bob@test.com (player) - 85 XP");
+            rows.add("alice@test.com (joueur) - 120 XP");
+            rows.add("bob@test.com (joueur) - 85 XP");
             rows.add("admin@test.com (admin) - 0 XP");
             adapter.notifyDataSetChanged();
             return;

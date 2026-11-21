@@ -7,6 +7,10 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.TextView;
 
+import androidx.core.content.ContextCompat;
+
+import com.google.android.material.color.MaterialColors;
+
 import java.util.List;
 
 public class LevelAdapter extends BaseAdapter {
@@ -29,14 +33,21 @@ public class LevelAdapter extends BaseAdapter {
             convertView = LayoutInflater.from(context).inflate(R.layout.item_level, parent, false);
         }
         Level l = levels.get(position);
-        ((TextView) convertView.findViewById(R.id.txtLevelName))
-                .setText("Level " + l.getLevel() + " - " + l.getName());
+        TextView name = convertView.findViewById(R.id.txtLevelName);
+        name.setText("Niveau " + l.getLevel() + " · " + l.getName());
+        name.setTextColor(Mission.difficultyColor(context, l.getName()));
         ((TextView) convertView.findViewById(R.id.txtLevelProgress))
-                .setText(l.getCompleted() + "/" + l.getTotal() + " missions");
+                .setText(l.getCompleted() + "/" + l.getTotal() + " missions réussies");
 
         TextView status = convertView.findViewById(R.id.txtLevelStatus);
-        convertView.setAlpha(1f);
-        status.setText(l.isCompleted() ? "\u2714 Completed" : "In progress");
+        if (l.isCompleted()) {
+            status.setText("✓ Terminé");
+            status.setTextColor(ContextCompat.getColor(context, R.color.verdict_success));
+        } else {
+            status.setText("En cours");
+            status.setTextColor(MaterialColors.getColor(status,
+                    com.google.android.material.R.attr.colorOnSurfaceVariant));
+        }
         return convertView;
     }
 }

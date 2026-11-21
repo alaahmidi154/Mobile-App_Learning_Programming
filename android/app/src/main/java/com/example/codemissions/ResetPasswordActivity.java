@@ -41,11 +41,11 @@ public class ResetPasswordActivity extends AppCompatActivity {
     private void sendCode() {
         String email = edtEmail.getText().toString().trim();
         if (email.isEmpty()) {
-            show("Enter your e-mail first.", true);
+            show("Entrez d'abord votre e-mail.", true);
             return;
         }
         if (ApiClient.USE_MOCK_DATA) {
-            show("Mock mode: use the code 123456.", false);
+            show("Mode démo : utilisez le code 123456.", false);
             return;
         }
         try {
@@ -53,10 +53,10 @@ public class ResetPasswordActivity extends AppCompatActivity {
             body.put("email", email);
             ApiClient.getInstance(this).postObject("/auth/forgot-password", body,
                     response -> show(response.optString("message",
-                            "If this e-mail exists, a code was sent."), false),
+                            "Si cet e-mail existe, un code a été envoyé."), false),
                     error -> show(ErrorUtils.message(error), true));
         } catch (JSONException e) {
-            show("Internal error.", true);
+            show("Erreur interne.", true);
         }
     }
 
@@ -66,19 +66,19 @@ public class ResetPasswordActivity extends AppCompatActivity {
         String newPassword = edtNewPassword.getText().toString();
 
         if (email.isEmpty() || code.isEmpty() || newPassword.isEmpty()) {
-            show("Please fill in all the fields.", true);
+            show("Remplissez tous les champs.", true);
             return;
         }
         if (newPassword.length() < 6) {
-            show("The password must have at least 6 characters.", true);
+            show("Le mot de passe doit contenir au moins 6 caractères.", true);
             return;
         }
         if (ApiClient.USE_MOCK_DATA) {
             if ("123456".equals(code)) {
-                Toast.makeText(this, "Password reset (mock).", Toast.LENGTH_LONG).show();
+                Toast.makeText(this, "Mot de passe réinitialisé (démo).", Toast.LENGTH_LONG).show();
                 finish();
             } else {
-                show("Invalid code.", true);
+                show("Code invalide.", true);
             }
             return;
         }
@@ -90,13 +90,13 @@ public class ResetPasswordActivity extends AppCompatActivity {
             ApiClient.getInstance(this).postObject("/auth/reset-password", body,
                     response -> {
                         Toast.makeText(this,
-                                response.optString("message", "Password reset."),
+                                response.optString("message", "Mot de passe réinitialisé."),
                                 Toast.LENGTH_LONG).show();
                         finish();
                     },
                     error -> show(ErrorUtils.message(error), true));
         } catch (JSONException e) {
-            show("Internal error.", true);
+            show("Erreur interne.", true);
         }
     }
 }

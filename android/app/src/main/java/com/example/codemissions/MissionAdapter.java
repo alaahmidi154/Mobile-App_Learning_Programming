@@ -7,6 +7,10 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.TextView;
 
+import androidx.core.content.ContextCompat;
+
+import com.google.android.material.color.MaterialColors;
+
 import java.util.List;
 
 public class MissionAdapter extends BaseAdapter {
@@ -35,20 +39,30 @@ public class MissionAdapter extends BaseAdapter {
                     .inflate(R.layout.item_mission, parent, false);
         }
         Mission m = missions.get(position);
+
         ((TextView) convertView.findViewById(R.id.txtMissionTitle)).setText(m.getTitle());
-        ((TextView) convertView.findViewById(R.id.txtMissionInfo))
-                .setText(m.getDifficulty() + " - " + m.getXp() + " XP");
+
+        TextView difficulty = convertView.findViewById(R.id.txtMissionDifficulty);
+        difficulty.setText(m.getDifficulty());
+        difficulty.setTextColor(Mission.difficultyColor(context, m.getDifficulty()));
+
+        ((TextView) convertView.findViewById(R.id.txtMissionXp))
+                .setText(" · +" + m.getXp() + " XP");
 
         TextView status = convertView.findViewById(R.id.txtMissionStatus);
+        convertView.setAlpha(1f);
         if (m.isSolved()) {
-            status.setText("\u2714 Completed");
-            convertView.setAlpha(1f);
+            status.setText("✓ Réussie");
+            status.setTextColor(ContextCompat.getColor(context, R.color.verdict_success));
         } else if (!m.isUnlocked()) {
-            status.setText("\uD83D\uDD12 Locked");
+            status.setText("🔒 Verrouillée");
+            status.setTextColor(MaterialColors.getColor(status,
+                    com.google.android.material.R.attr.colorOnSurfaceVariant));
             convertView.setAlpha(0.5f);
         } else {
-            status.setText("To do");
-            convertView.setAlpha(1f);
+            status.setText("À faire");
+            status.setTextColor(MaterialColors.getColor(status,
+                    com.google.android.material.R.attr.colorOnSurfaceVariant));
         }
         return convertView;
     }

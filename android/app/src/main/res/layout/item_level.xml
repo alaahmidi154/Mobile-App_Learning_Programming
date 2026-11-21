@@ -16,7 +16,7 @@
             android:id="@+id/txtLevelName"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Level 1 - Easy"
+            android:text="Niveau 1 · Débutant"
             android:textSize="18sp"
             android:textStyle="bold" />
 
@@ -24,7 +24,7 @@
             android:id="@+id/txtLevelProgress"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="0/3 missions"
+            android:text="0/3 missions réussies"
             android:textSize="13sp" />
     </LinearLayout>
 
@@ -32,6 +32,6 @@
         android:id="@+id/txtLevelStatus"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="In progress"
+        android:text="En cours"
         android:textStyle="bold" />
 </LinearLayout>

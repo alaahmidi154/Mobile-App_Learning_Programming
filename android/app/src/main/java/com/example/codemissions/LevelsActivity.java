@@ -46,7 +46,8 @@ public class LevelsActivity extends AppCompatActivity {
         btnLeaderboard.setOnClickListener(v ->
                 startActivity(new Intent(this, LeaderboardActivity.class)));
 
-        if (Session.isAdmin(this)) {
+        // Admin screen: demo mode only (the API has no /admin endpoint yet)
+        if (ApiClient.USE_MOCK_DATA && Session.isAdmin(this)) {
             btnAdmin.setVisibility(View.VISIBLE);
             btnAdmin.setOnClickListener(v ->
                     startActivity(new Intent(this, AdminActivity.class)));
@@ -57,41 +58,52 @@ public class LevelsActivity extends AppCompatActivity {
             Intent intent = new Intent(this, MainActivity.class);
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             startActivity(intent);
+            finish();
         });
     }
 
     @Override
     protected void onResume() {
-        super.onResume();
-        txtUserInfo.setText(Session.getEmail(this) + " (" + Session.getRole(this)
-                + ") - " + Session.getXp(this) + " XP");
+        super.onResume();   // XP/level/solved missions may have changed
+        txtUserInfo.setText(Session.getName(this) + " · Niveau " + Session.getLevel(this)
+                + " · " + Session.getXp(this) + " XP");
         loadLevels();
+    }
+
+    private void showLevels(List<Mission> missions) {
+        levels.clear();
+        levels.addAll(Level.group(missions));
+        adapter.notifyDataSetChanged();
+        if (levels.isEmpty()) txtStatus.setText("Aucune mission disponible.");
     }
 
     private void loadLevels() {
         txtStatus.setText("");
         if (ApiClient.USE_MOCK_DATA) {
-            levels.clear();
-            levels.addAll(MockData.levels(this));
-            adapter.notifyDataSetChanged();
+            showLevels(MockData.allMissions(this));
             return;
         }
 
-        ApiClient.getInstance(this).getArray("/levels",
+        // The API has no /levels: levels are built from GET /missions (grouped by difficulty)
+        ApiClient.getInstance(this).getArray("/missions",
                 (JSONArray response) -> {
-                    levels.clear();
+                    List<Mission> missions = new ArrayList<>();
                     for (int i = 0; i < response.length(); i++) {
                         JSONObject o = response.optJSONObject(i);
                         if (o == null) continue;
-                        levels.add(new Level(
-                                o.optInt("level"),
-                                o.optString("name"),
-                                o.optInt("total"),
-                                o.optInt("completed"),
-                                true));
+                        // API contract: id, titre, difficulte, xp, reussie
+                        missions.add(new Mission(
+                                o.optInt("id"),
+                                o.optString("titre"),
+                                o.optString("difficulte"),
+                                o.optInt("xp"),
+                                o.optBoolean("reussie", false)));
                     }
-                    adapter.notifyDataSetChanged();
+                    showLevels(missions);
                 },
-                error -> txtStatus.setText(ErrorUtils.message(error)));
+                error -> {
+                    if (ErrorUtils.handleUnauthorized(this, error)) return;
+                    txtStatus.setText(ErrorUtils.message(error));
+                });
     }
 }
