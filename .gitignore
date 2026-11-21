@@ -449,6 +449,3 @@ captures/
 # OS
 .DS_Store
 Thumbs.db
-**/appsettings.json
-**/bin/
-**/obj/
