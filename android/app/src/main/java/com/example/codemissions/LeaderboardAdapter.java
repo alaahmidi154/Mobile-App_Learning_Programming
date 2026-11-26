@@ -66,6 +66,8 @@ public class LeaderboardAdapter extends BaseAdapter {
                     com.google.android.material.R.attr.colorOnSurfaceVariant));
         }
 
+        ((TextView) convertView.findViewById(R.id.txtAvatar)).setText(
+                row.nom == null || row.nom.isEmpty() ? "?" : row.nom.substring(0, 1).toUpperCase());
         ((TextView) convertView.findViewById(R.id.txtPlayerName)).setText(row.nom);
         ((TextView) convertView.findViewById(R.id.txtPlayerLevel)).setText("Niveau " + row.niveau);
         ((TextView) convertView.findViewById(R.id.txtPlayerXp)).setText(row.xp + " XP");

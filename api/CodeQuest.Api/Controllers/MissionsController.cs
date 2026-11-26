@@ -16,6 +16,8 @@ public class MissionsController : ControllerBase
 {
     private const int MaxCodeLength = 20_000;
 
+    private record TestRow(string Entree, string Sortie, bool Visible);
+
     private readonly AppDbContext _db;
     private readonly ISandboxRunner _sandbox;
     private readonly ILogger<MissionsController> _log;
@@ -38,7 +40,16 @@ public class MissionsController : ControllerBase
             .Distinct()
             .ToListAsync();
 
-        var missions = await _db.Set<Mission>().OrderBy(m => m.Id).ToListAsync();
+        var withTests = await _db.Set<Test>().Select(t => t.IdMission).Distinct().ToListAsync();
+        var isAdmin = User.IsInRole("admin");
+
+        var missions = (await _db.Set<Mission>().ToListAsync())
+            // a mission nobody can be graded on is not shown to players (admins still see it)
+            .Where(m => isAdmin || withTests.Contains(m.Id))
+            // roadmap order = Débutant, then Intermédiaire, then Avancé, then creation order
+            .OrderBy(m => LevelRank(m.Difficulte))
+            .ThenBy(m => m.Id)
+            .ToList();
 
         return Ok(missions.Select(m => new
         {
@@ -50,17 +61,49 @@ public class MissionsController : ControllerBase
         }));
     }
 
+    private static int LevelRank(string difficulte) => difficulte switch
+    {
+        "Débutant" => 1,
+        "Intermédiaire" => 2,
+        "Avancé" => 3,
+        _ => 9
+    };
+
     [HttpGet("{id:int}")]
     public async Task<IActionResult> GetById(int id)
     {
         var m = await _db.Set<Mission>().FirstOrDefaultAsync(x => x.Id == id);
         if (m == null) return NotFound(new { message = "Mission introuvable." });
 
-        return Ok(new { id = m.Id, titre = m.Titre, enonce = m.Enonce, codeDepart = m.CodeDepart, xp = m.Xp });
+        // Only the VISIBLE tests are shown to the player (as examples).
+        var exemples = await _db.Set<Test>()
+            .Where(t => t.IdMission == id && t.Visible)
+            .OrderBy(t => t.Id)
+            .Select(t => new { entree = t.Entree, sortieAttendue = t.SortieAttendue })
+            .ToListAsync();
+
+        return Ok(new
+        {
+            id = m.Id,
+            titre = m.Titre,
+            enonce = m.Enonce,
+            codeDepart = m.CodeDepart,
+            xp = m.Xp,
+            difficulte = m.Difficulte,
+            indice = m.Indice,
+            exemples
+        });
     }
 
+    /// <summary>"Tester": runs the visible tests only. Nothing is saved, no XP.</summary>
+    [HttpPost("{id:int}/test")]
+    public Task<IActionResult> TestCode(int id, SubmitRequest req) => Grade(id, req, save: false);
+
+    /// <summary>"Soumettre": runs ALL tests, saves the submission, gives XP once.</summary>
     [HttpPost("{id:int}/submit")]
-    public async Task<IActionResult> Submit(int id, SubmitRequest req)
+    public Task<IActionResult> Submit(int id, SubmitRequest req) => Grade(id, req, save: true);
+
+    private async Task<IActionResult> Grade(int id, SubmitRequest req, bool save)
     {
         var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 
@@ -71,20 +114,22 @@ public class MissionsController : ControllerBase
         if (req.Code.Length > MaxCodeLength)
             return BadRequest(new { message = "Code trop long." });
 
-        // ALL tests (visible and hidden) go to the sandbox.
-        var tests = await _db.Set<Test>()
-            .Where(t => t.IdMission == id)
-            .OrderBy(t => t.Id)
-            .Select(t => new SandboxTest(t.Entree, t.SortieAttendue))
+        var query = _db.Set<Test>().Where(t => t.IdMission == id);
+        if (!save) query = query.Where(t => t.Visible);
+
+        var rows = await query.OrderBy(t => t.Id)
+            .Select(t => new TestRow(t.Entree, t.SortieAttendue, t.Visible))
             .ToListAsync();
 
-        if (tests.Count == 0)
+        if (rows.Count == 0)
             return Conflict(new { message = "Cette mission n'a pas encore de tests." });
 
         SandboxResult result;
         try
         {
-            result = await _sandbox.RunAsync(req.Code, tests, HttpContext.RequestAborted);
+            result = await _sandbox.RunAsync(req.Code,
+                rows.Select(r => new SandboxTest(r.Entree, r.Sortie)).ToList(),
+                HttpContext.RequestAborted);
         }
         catch (SandboxUnavailableException ex)
         {
@@ -95,43 +140,66 @@ public class MissionsController : ControllerBase
         }
 
         var verdict = result.Verdict;
-        var tempsMs = result.TempsExecutionMs;
-
-        var dejaReussie = await _db.Set<Soumission>().AnyAsync(s =>
-            s.IdUtilisateur == userId && s.IdMission == id && s.Verdict == "réussi");
+        var xpGagnes = 0;
+        int xpTotal;
 
         var user = await _db.Set<Utilisateur>().FirstAsync(u => u.Id == userId);
 
-        var xpGagnes = 0;
-        if (verdict == "réussi" && !dejaReussie)
+        if (save)
         {
-            xpGagnes = mission.Xp;
-            user.XpTotal += xpGagnes;
-            user.NiveauJoueur = user.XpTotal / 100 + 1;
+            var dejaReussie = await _db.Set<Soumission>().AnyAsync(s =>
+                s.IdUtilisateur == userId && s.IdMission == id && s.Verdict == "réussi");
+
+            if (verdict == "réussi" && !dejaReussie && user.Role != "admin")
+            {
+                xpGagnes = mission.Xp;
+                user.XpTotal += xpGagnes;
+                user.NiveauJoueur = user.XpTotal / 100 + 1;
+            }
+
+            _db.Set<Soumission>().Add(new Soumission
+            {
+                IdUtilisateur = userId,
+                IdMission = id,
+                Code = req.Code,
+                Verdict = verdict,
+                TempsExecution = result.TempsExecutionMs,
+                Date = DateTime.UtcNow
+            });
+            await _db.SaveChangesAsync();
         }
+        xpTotal = user.XpTotal;
 
-        _db.Set<Soumission>().Add(new Soumission
+        string message;
+        if (verdict == "réussi")
         {
-            IdUtilisateur = userId,
-            IdMission = id,
-            Code = req.Code,
-            Verdict = verdict,
-            TempsExecution = tempsMs,
-            Date = DateTime.UtcNow
-        });
-        await _db.SaveChangesAsync();
+            message = !save ? "Les exemples passent. Soumets pour valider la mission !"
+                : xpGagnes > 0 ? "Bravo !"
+                : user.Role == "admin" ? "Mode admin : mission réussie, pas de XP."
+                : "Déjà réussie, pas de XP supplémentaire.";
+        }
+        else message = result.Message;
 
-        var message = verdict == "réussi"
-            ? (xpGagnes > 0 ? "Bravo !" : "Déjà réussie, pas de XP supplémentaire.")
-            : result.Message;
+        // Only VISIBLE tests are detailed; a hidden test never reveals its data.
+        object? details = null;
+        if (verdict == "échoué" && result.TestIndex is int i && i >= 0 && i < rows.Count)
+        {
+            var t = rows[i];
+            details = t.Visible
+                ? (object)new { visible = true, entree = t.Entree, attendu = t.Sortie, obtenu = result.Obtenu }
+                : new { visible = false, entree = (string?)null, attendu = (string?)null, obtenu = (string?)null };
+        }
 
         return Ok(new
         {
             verdict,
-            tempsExecutionMs = tempsMs,
+            tempsExecutionMs = result.TempsExecutionMs,
             xpGagnes,
-            xpTotal = user.XpTotal,
-            message
+            xpTotal,
+            message,
+            ligne = result.Ligne,
+            apercu = !save,
+            details
         });
     }
 }

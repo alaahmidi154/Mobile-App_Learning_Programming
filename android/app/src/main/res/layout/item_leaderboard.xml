@@ -4,22 +4,37 @@
     android:layout_height="wrap_content"
     android:gravity="center_vertical"
     android:orientation="horizontal"
-    android:paddingStart="12dp"
+    android:paddingStart="16dp"
     android:paddingTop="12dp"
-    android:paddingEnd="12dp"
+    android:paddingEnd="16dp"
     android:paddingBottom="12dp">
 
     <TextView
         android:id="@+id/txtRank"
-        android:layout_width="40dp"
+        android:layout_width="36dp"
         android:layout_height="wrap_content"
-        android:text="1"
-        android:textSize="20sp"
+        android:fontFamily="@font/jetbrains_mono"
+        android:text="4"
+        android:textColor="@color/text_muted"
+        android:textSize="16sp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/txtAvatar"
+        android:layout_width="38dp"
+        android:layout_height="38dp"
+        android:background="@drawable/bg_avatar"
+        android:backgroundTint="@color/py_blue"
+        android:gravity="center"
+        android:text="J"
+        android:textColor="@color/white"
+        android:textSize="16sp"
         android:textStyle="bold" />
 
     <LinearLayout
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_marginStart="12dp"
         android:layout_weight="1"
         android:orientation="vertical">
 
@@ -28,7 +43,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Joueur"
-            android:textSize="16sp"
+            android:textColor="@color/text_primary"
+            android:textSize="15sp"
             android:textStyle="bold" />
 
         <TextView
@@ -36,7 +52,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Niveau 1"
-            android:textColor="?android:attr/textColorSecondary"
+            android:textColor="@color/text_muted"
             android:textSize="12sp" />
     </LinearLayout>
 
@@ -44,8 +60,9 @@
         android:id="@+id/txtPlayerXp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:fontFamily="@font/jetbrains_mono"
         android:text="0 XP"
-        android:textColor="?attr/colorPrimary"
-        android:textSize="16sp"
+        android:textColor="@color/p_cream"
+        android:textSize="14sp"
         android:textStyle="bold" />
 </LinearLayout>

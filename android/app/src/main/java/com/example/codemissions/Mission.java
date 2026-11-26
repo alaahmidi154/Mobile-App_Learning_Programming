@@ -4,7 +4,12 @@ import android.content.Context;
 
 import androidx.core.content.ContextCompat;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+
 import java.text.Normalizer;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Mission {
     private final int id;
@@ -53,6 +58,15 @@ public class Mission {
         }
     }
 
+    /** A small Python flavour for each level, shown on the roadmap. */
+    public static String levelCode(int level) {
+        switch (level) {
+            case 2:  return "if / for / def";
+            case 3:  return "algorithmes";
+            default: return "print()";
+        }
+    }
+
     /** Green / orange / red for the 3 difficulties of the database. */
     public static int difficultyColor(Context c, String difficulty) {
         switch (levelOf(difficulty)) {
@@ -67,5 +81,29 @@ public class Mission {
         for (int i = 0; i < list.size(); i++) {
             list.get(i).setUnlocked(i == 0 || list.get(i - 1).isSolved());
         }
+    }
+
+    /** Admins preview the whole roadmap: nothing is locked for them. */
+    public static void unlockAll(java.util.List<Mission> list) {
+        for (Mission m : list) m.setUnlocked(true);
+    }
+
+    /** Parses GET /api/missions: [{id, titre, difficulte, xp, reussie}], already locked in order. */
+    public static List<Mission> fromJson(JSONArray array) {
+        List<Mission> list = new ArrayList<>();
+        for (int i = 0; i < array.length(); i++) {
+            JSONObject o = array.optJSONObject(i);
+            if (o == null) continue;
+            list.add(new Mission(
+                    o.optInt("id"),
+                    o.optString("titre"),
+                    o.optString("difficulte"),
+                    o.optInt("xp"),
+                    o.optBoolean("reussie", false)));
+        }
+        // Débutant, then Intermédiaire, then Avancé (stable: keeps the API order inside a level)
+        java.util.Collections.sort(list, (a, b) -> Integer.compare(a.getLevel(), b.getLevel()));
+        applyLocks(list);
+        return list;
     }
 }

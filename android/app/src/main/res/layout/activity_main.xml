@@ -8,43 +8,66 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="center"
+        android:gravity="center_horizontal"
         android:orientation="vertical"
-        android:padding="24dp">
+        android:paddingStart="24dp"
+        android:paddingEnd="24dp"
+        android:paddingBottom="24dp">
 
-        <TextView
+        <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="CodeMissions"
-            android:textColor="?attr/colorPrimary"
-            android:textSize="32sp"
-            android:textStyle="bold" />
+            android:layout_marginTop="28dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:gravity="center"
-            android:text="Apprenez à programmer en relevant des missions"
-            android:textColor="?android:attr/textColorSecondary"
-            android:textSize="14sp" />
+            <TextView
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:background="@drawable/bg_hero"
+                android:fontFamily="@font/jetbrains_mono"
+                android:gravity="center"
+                android:text="py"
+                android:textColor="@color/p_cream"
+                android:textSize="17sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="10dp"
+                android:text="CodeMissions"
+                android:textColor="@color/text_primary"
+                android:textSize="20sp"
+                android:textStyle="bold" />
+        </LinearLayout>
 
         <TextView
             android:id="@+id/txtSubtitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="32dp"
-            android:layout_marginBottom="16dp"
+            android:layout_marginTop="44dp"
             android:text="Connexion"
-            android:textSize="20sp"
+            android:textColor="@color/text_primary"
+            android:textSize="28sp"
             android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="32dp"
+            android:gravity="center"
+            android:text="Apprends Python en relevant des missions."
+            android:textColor="@color/text_muted"
+            android:textSize="14sp" />
 
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/tilName"
-            style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+            style="@style/Widget.App.TextInput"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="12dp"
+            android:layout_marginBottom="14dp"
             android:hint="Nom d'utilisateur"
             android:visibility="gone">
 
@@ -56,10 +79,10 @@
         </com.google.android.material.textfield.TextInputLayout>
 
         <com.google.android.material.textfield.TextInputLayout
-            style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+            style="@style/Widget.App.TextInput"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="12dp"
+            android:layout_marginBottom="14dp"
             android:hint="E-mail">
 
             <com.google.android.material.textfield.TextInputEditText
@@ -70,10 +93,10 @@
         </com.google.android.material.textfield.TextInputLayout>
 
         <com.google.android.material.textfield.TextInputLayout
-            style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+            style="@style/Widget.App.TextInput"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="20dp"
+            android:layout_marginBottom="4dp"
             android:hint="Mot de passe"
             app:endIconMode="password_toggle">
 
@@ -85,35 +108,56 @@
         </com.google.android.material.textfield.TextInputLayout>
 
         <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnForgot"
+            style="@style/Widget.Material3.Button.TextButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end"
+            android:text="Mot de passe oublié ?"
+            android:textColor="@color/p_cream" />
+
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/btnSubmit"
             android:layout_width="match_parent"
-            android:layout_height="56dp"
-            android:text="Se connecter" />
+            android:layout_height="58dp"
+            android:layout_marginTop="12dp"
+            android:text="Se connecter"
+            android:textColor="@color/p_deep"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            app:backgroundTint="@color/p_cream" />
+
+        <TextView
+            android:id="@+id/txtLoginStatus"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="14dp"
+            android:gravity="center"
+            android:textColor="@color/verdict_error" />
+
+        <View
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnToggleMode"
             style="@style/Widget.Material3.Button.TextButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:text="Pas de compte ? S'inscrire" />
+            android:layout_marginTop="16dp"
+            android:text="Pas de compte ? S'inscrire"
+            android:textColor="@color/p_cream" />
 
         <TextView
-            android:id="@+id/btnForgot"
-            style="@style/TextAppearance.Material3.LabelLarge"
+            android:id="@+id/btnServer"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:padding="8dp"
-            android:text="Mot de passe oublié ?"
-            android:textColor="?attr/colorPrimary"
-            android:visibility="gone" />
-
-        <TextView
-            android:id="@+id/txtLoginStatus"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            android:gravity="center"
-            android:textColor="?attr/colorError" />
+            android:layout_marginTop="4dp"
+            android:fontFamily="@font/jetbrains_mono"
+            android:padding="10dp"
+            android:text="serveur : emulateur"
+            android:textColor="@color/text_muted"
+            android:textSize="12sp" />
     </LinearLayout>
 </ScrollView>

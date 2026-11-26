@@ -31,7 +31,8 @@ CREATE TABLE "Mission" (
     "Difficulte"  VARCHAR(20)  NOT NULL
         CHECK ("Difficulte" IN ('Débutant', 'Intermédiaire', 'Avancé')),
     "Xp"          INT          NOT NULL,
-    "CodeDepart"  TEXT         NOT NULL
+    "CodeDepart"  TEXT         NOT NULL,
+    "Indice"      TEXT                      -- optional hint shown to the player
 );
 
 CREATE TABLE "Test" (
@@ -90,6 +91,14 @@ INSERT INTO "Mission" ("Id", "Titre", "Enonce", "Difficulte", "Xp", "CodeDepart"
  'Lisez un entier n et affichez "oui" s''il est premier, sinon "non".',
  'Avancé', 150,
  E'n = int(input())\n# Affichez oui ou non');
+
+-- indices (hints) of the 6 starter missions
+UPDATE "Mission" SET "Indice" = 'input() renvoie du texte : transforme-le avec int(). Ensuite print(a + b).' WHERE "Id" = 1;
+UPDATE "Mission" SET "Indice" = 'Un nombre est pair quand n % 2 == 0. Utilise if / else puis print("pair") ou print("impair").' WHERE "Id" = 2;
+UPDATE "Mission" SET "Indice" = 'Compare avec if / elif, ou utilise directement la fonction max(a, b, c).' WHERE "Id" = 3;
+UPDATE "Mission" SET "Indice" = 'Pars de resultat = 1, puis dans une boucle for i in range(2, n + 1) multiplie resultat par i. Pour n = 0 la réponse est 1.' WHERE "Id" = 4;
+UPDATE "Mission" SET "Indice" = 'Passe le mot en minuscules avec s.lower(), puis parcours chaque lettre et compte celles qui sont dans "aeiou".' WHERE "Id" = 5;
+UPDATE "Mission" SET "Indice" = 'Si n < 2 ce n''est pas premier. Sinon teste les diviseurs de 2 à racine de n : si n % d == 0 pour un d, la réponse est "non".' WHERE "Id" = 6;
 
 -- remet la sequence apres les ids explicites
 SELECT setval(pg_get_serial_sequence('"Mission"', 'Id'), (SELECT MAX("Id") FROM "Mission"));
