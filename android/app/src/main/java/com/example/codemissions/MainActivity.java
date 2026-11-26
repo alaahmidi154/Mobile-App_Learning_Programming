@@ -18,20 +18,21 @@ public class MainActivity extends AppCompatActivity {
     private View tilName;
     private EditText edtName, edtEmail, edtPassword;
     private TextView txtSubtitle, txtStatus;
-    private Button btnSubmit, btnToggleMode;
+    private Button btnSubmit, btnToggleMode, btnForgot;
     private boolean registerMode = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // Already logged in: go straight to the levels list
+        // Already logged in: go straight to the roadmap
         if (Session.isLoggedIn(this)) {
-            openLevels();
+            openRoadmap();
             return;
         }
 
         setContentView(R.layout.activity_main);
+        Screen.fit(this);
 
         tilName = findViewById(R.id.tilName);
         edtName = findViewById(R.id.edtName);
@@ -41,26 +42,62 @@ public class MainActivity extends AppCompatActivity {
         txtStatus = findViewById(R.id.txtLoginStatus);
         btnSubmit = findViewById(R.id.btnSubmit);
         btnToggleMode = findViewById(R.id.btnToggleMode);
+        btnForgot = findViewById(R.id.btnForgot);
 
-        // The API has no password-reset endpoint yet: the screen is only reachable in demo mode
-        TextView btnForgot = findViewById(R.id.btnForgot);
-        if (ApiClient.USE_MOCK_DATA) {
-            btnForgot.setVisibility(View.VISIBLE);
-            btnForgot.setOnClickListener(v ->
-                    startActivity(new Intent(this, ResetPasswordActivity.class)));
-        }
-
+        btnForgot.setOnClickListener(v -> {
+            Intent intent = new Intent(this, ResetPasswordActivity.class);
+            intent.putExtra("email", edtEmail.getText().toString().trim());
+            startActivity(intent);
+        });
         btnSubmit.setOnClickListener(v -> submit());
         btnToggleMode.setOnClickListener(v -> {
             registerMode = !registerMode;
             updateMode();
         });
         updateMode();
+
+        btnServer = findViewById(R.id.btnServer);
+        showServer();
+        btnServer.setOnClickListener(v -> askServer());
+    }
+
+    private TextView btnServer;
+
+    private void showServer() {
+        String shortUrl = ApiClient.getServerShort(this);
+        boolean emulator = ApiClient.DEFAULT_BASE_URL.equals(ApiClient.getServerUrl(this));
+        btnServer.setText("serveur : " + (emulator ? "émulateur (" + shortUrl + ")" : shortUrl) + "  ·  modifier");
+    }
+
+    /** Lets the phone find the PC without rebuilding the app: type the PC's Wi-Fi address. */
+    private void askServer() {
+        final EditText input = new EditText(this);
+        input.setHint("ex : 192.168.1.20");
+        input.setInputType(android.text.InputType.TYPE_CLASS_TEXT | android.text.InputType.TYPE_TEXT_VARIATION_URI);
+        input.setText(ApiClient.getServerShort(this));
+        input.setSelectAllOnFocus(true);
+        int pad = (int) (20 * getResources().getDisplayMetrics().density);
+        android.widget.FrameLayout box = new android.widget.FrameLayout(this);
+        box.setPadding(pad, pad / 2, pad, 0);
+        box.addView(input);
+
+        new com.google.android.material.dialog.MaterialAlertDialogBuilder(this)
+                .setTitle("Adresse du serveur")
+                .setMessage("Adresse IP du PC qui lance l'API (même Wi-Fi). Laisse vide pour l'émulateur.")
+                .setView(box)
+                .setNegativeButton("Annuler", null)
+                .setPositiveButton("Enregistrer", (d, w) -> {
+                    ApiClient.setServer(this, input.getText().toString());
+                    showServer();
+                    txtStatus.setText("");
+                })
+                .show();
     }
 
     /** Same screen for login and register: only the name field and the texts change. */
     private void updateMode() {
         tilName.setVisibility(registerMode ? View.VISIBLE : View.GONE);
+        btnForgot.setVisibility(registerMode ? View.GONE : View.VISIBLE);
         txtSubtitle.setText(registerMode ? "Créer un compte" : "Connexion");
         btnSubmit.setText(registerMode ? "Créer mon compte" : "Se connecter");
         btnToggleMode.setText(registerMode
@@ -95,23 +132,13 @@ public class MainActivity extends AppCompatActivity {
         if (!fieldsOk()) return;
         txtStatus.setText("");
 
-        final String email = edtEmail.getText().toString().trim();
         final String name = edtName.getText().toString().trim();
-
-        if (ApiClient.USE_MOCK_DATA) {
-            String shown = registerMode ? name : email.split("@")[0];
-            // Demo: an e-mail starting with "admin" gets the admin role
-            String role = email.toLowerCase().startsWith("admin") ? "admin" : "joueur";
-            Session.save(this, "mock-token", shown, 0, 1, role);
-            openLevels();
-            return;
-        }
 
         JSONObject body = new JSONObject();
         try {
             // API contract: login {email, password}; register {nom, email, password}
             if (registerMode) body.put("nom", name);
-            body.put("email", email);
+            body.put("email", edtEmail.getText().toString().trim());
             body.put("password", edtPassword.getText().toString());
         } catch (JSONException e) {
             txtStatus.setText("Erreur interne.");
@@ -123,7 +150,7 @@ public class MainActivity extends AppCompatActivity {
         ApiClient.getInstance(this).postObject(path, body,
                 response -> {
                     setBusy(false);
-                    // Both endpoints answer {token, nom, xpTotal, niveauJoueur}
+                    // Both endpoints answer {token, nom, xpTotal, niveauJoueur, role}
                     String token = response.optString("token", "");
                     if (token.isEmpty()) {
                         txtStatus.setText("Réponse invalide du serveur.");
@@ -132,8 +159,9 @@ public class MainActivity extends AppCompatActivity {
                     Session.save(this, token,
                             response.optString("nom", name),
                             response.optInt("xpTotal", 0),
-                            response.optInt("niveauJoueur", 1));
-                    openLevels();
+                            response.optInt("niveauJoueur", 1),
+                            response.optString("role", "joueur"));
+                    openRoadmap();
                 },
                 error -> {
                     setBusy(false);
@@ -141,8 +169,8 @@ public class MainActivity extends AppCompatActivity {
                 });
     }
 
-    private void openLevels() {
-        startActivity(new Intent(this, LevelsActivity.class));
+    private void openRoadmap() {
+        startActivity(new Intent(this, RoadmapActivity.class));
         finish();
     }
 }

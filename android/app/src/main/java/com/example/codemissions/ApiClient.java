@@ -18,9 +18,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class ApiClient {
-    public static final boolean USE_MOCK_DATA = false; // true = demo mode without server (fake data)
-    // Emulator: 10.0.2.2 ; real phone: http://<PC IP>:5007/api (same Wi-Fi, firewall port 5007 open)
-    public static final String BASE_URL = "http://10.0.2.2:5007/api";
+    /** Default = the Android emulator reaching the PC. On a real phone, set the server in the app. */
+    public static final String DEFAULT_BASE_URL = "http://localhost:5007/api";
 
     private static ApiClient instance;
     private final RequestQueue queue;
@@ -38,6 +37,41 @@ public class ApiClient {
         return instance;
     }
 
+    // ---- server address (typed by the user on the login screen, e.g. "192.168.1.20") ----
+
+    private static android.content.SharedPreferences serverPrefs(Context c) {
+        return c.getSharedPreferences("server", Context.MODE_PRIVATE);
+    }
+
+    private String baseUrl() { return getServerUrl(context); }
+
+    public static String getServerUrl(Context c) {
+        return serverPrefs(c).getString("url", DEFAULT_BASE_URL);
+    }
+
+    /** What the user sees in the box: "192.168.1.20:5007". */
+    public static String getServerShort(Context c) {
+        String u = getServerUrl(c).replaceFirst("^https?://", "");
+        return u.endsWith("/api") ? u.substring(0, u.length() - 4) : u;
+    }
+
+    /**
+     * Accepts "192.168.1.20", "192.168.1.20:5007", "http://192.168.1.20:5007" or the full
+     * ".../api" form, and stores "http://host:port/api". Empty = back to the emulator address.
+     */
+    public static void setServer(Context c, String input) {
+        String v = input == null ? "" : input.trim();
+        if (v.isEmpty()) {
+            serverPrefs(c).edit().remove("url").apply();
+            return;
+        }
+        v = v.replaceFirst("^https?://", "");
+        int slash = v.indexOf('/');
+        if (slash >= 0) v = v.substring(0, slash);
+        if (!v.contains(":")) v = v + ":5007";
+        serverPrefs(c).edit().putString("url", "http://" + v + "/api").apply();
+    }
+
     private Map<String, String> authHeaders() {
         Map<String, String> headers = new HashMap<>();
         String token = Session.getToken(context);
@@ -51,7 +85,7 @@ public class ApiClient {
                            Response.Listener<JSONObject> ok,
                            Response.ErrorListener err) {
         JsonObjectRequest req = new JsonObjectRequest(
-                Request.Method.POST, BASE_URL + path, body, ok, err) {
+                Request.Method.POST, baseUrl() + path, body, ok, err) {
             @Override
             public Map<String, String> getHeaders() throws AuthFailureError {
                 return authHeaders();
@@ -62,11 +96,25 @@ public class ApiClient {
         queue.add(req);
     }
 
+    /** POST / PUT / DELETE with a JSON answer (the admin API always answers {"ok": true, ...}). */
+    public void send(int method, String path, JSONObject body,
+                     Response.Listener<JSONObject> ok,
+                     Response.ErrorListener err) {
+        JsonObjectRequest req = new JsonObjectRequest(method, baseUrl() + path, body, ok, err) {
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                return authHeaders();
+            }
+        };
+        req.setRetryPolicy(new DefaultRetryPolicy(20000, 0, 1f));
+        queue.add(req);
+    }
+
     public void getObject(String path,
                           Response.Listener<JSONObject> ok,
                           Response.ErrorListener err) {
         JsonObjectRequest req = new JsonObjectRequest(
-                Request.Method.GET, BASE_URL + path, null, ok, err) {
+                Request.Method.GET, baseUrl() + path, null, ok, err) {
             @Override
             public Map<String, String> getHeaders() throws AuthFailureError {
                 return authHeaders();
@@ -79,7 +127,7 @@ public class ApiClient {
                          Response.Listener<JSONArray> ok,
                          Response.ErrorListener err) {
         JsonArrayRequest req = new JsonArrayRequest(
-                Request.Method.GET, BASE_URL + path, null, ok, err) {
+                Request.Method.GET, baseUrl() + path, null, ok, err) {
             @Override
             public Map<String, String> getHeaders() throws AuthFailureError {
                 return authHeaders();

@@ -9,10 +9,12 @@ namespace CodeQuest.Api.Services;
 public record SandboxTest(string Entree, string SortieAttendue);
 
 /// <summary>Verdict returned by sandbox/runner.py.</summary>
-public record SandboxResult(string Verdict, int TempsExecutionMs, string Message);
+public record SandboxResult(string Verdict, int TempsExecutionMs, string Message,
+    int? Ligne = null, int? TestIndex = null, string? Obtenu = null);
 
 /// <summary>JSON line printed by runner.py.</summary>
-public record RunnerOutput(string? Verdict, int TempsExecutionMs, string? Message);
+public record RunnerOutput(string? Verdict, int TempsExecutionMs, string? Message,
+    int? Ligne = null, int? TestIndex = null, string? Obtenu = null);
 
 /// <summary>
 /// The sandbox itself could not do its job (Docker closed, python missing,
@@ -172,7 +174,8 @@ public class DockerSandboxRunner : ISandboxRunner
                     throw new SandboxUnavailableException("Verdict inconnu renvoyé par le correcteur.");
                 }
 
-                return new SandboxResult(output.Verdict, output.TempsExecutionMs, output.Message ?? "");
+                return new SandboxResult(output.Verdict, output.TempsExecutionMs, output.Message ?? "",
+                    output.Ligne, output.TestIndex, output.Obtenu);
             }
         }
         finally

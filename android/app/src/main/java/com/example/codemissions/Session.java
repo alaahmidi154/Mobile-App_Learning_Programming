@@ -32,6 +32,10 @@ public class Session {
         prefs(c).edit().putInt("xp", xp).putInt("level", level).apply();
     }
 
+    public static void setRole(Context c, String role) {
+        prefs(c).edit().putString("role", role).apply();
+    }
+
     /** Same formula as the API (MissionsController): level = xpTotal / 100 + 1. */
     public static int levelFor(int xp) { return xp / 100 + 1; }
 
@@ -42,17 +46,6 @@ public class Session {
     public static String getRole(Context c) { return prefs(c).getString("role", "joueur"); }
     public static boolean isAdmin(Context c) { return "admin".equals(getRole(c)); }
     public static boolean isLoggedIn(Context c) { return getToken(c) != null; }
-
-    // Demo mode only: remembers which missions were solved
-    public static void markSolved(Context c, int missionId) {
-        Set<String> s = new HashSet<>(prefs(c).getStringSet("solved", new HashSet<>()));
-        s.add(String.valueOf(missionId));
-        prefs(c).edit().putStringSet("solved", s).apply();
-    }
-
-    public static boolean isSolved(Context c, int missionId) {
-        return prefs(c).getStringSet("solved", new HashSet<>()).contains(String.valueOf(missionId));
-    }
 
     public static void clear(Context c) { prefs(c).edit().clear().apply(); }
 }

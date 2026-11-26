@@ -3,30 +3,64 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
 
-    <!-- Brand -->
-    <color name="brand_primary">#4F46E5</color>
-    <color name="brand_primary_dark">#A5B4FC</color>
-    <color name="brand_on_primary_dark">#1E1B4B</color>
+    <!-- Palette: #290044  #500071  #8A2A78  #EEE3B0 (colorhunt) + near-black derived from it -->
+    <color name="p_deep">#290044</color>
+    <color name="p_mid">#500071</color>
+    <color name="p_magenta">#8A2A78</color>
+    <color name="p_cream">#EEE3B0</color>
+
+    <color name="bg">#0C0014</color>
+    <color name="surface">#170824</color>
+    <color name="surface_alt">#231034</color>
+    <color name="border">#3A1B52</color>
+    <color name="text_primary">#F6F1FA</color>
+    <color name="text_muted">#A895BA</color>
+
+    <!-- Names used by the code: py_yellow = main accent (cream), py_blue = magenta -->
+    <color name="py_yellow">#EEE3B0</color>
+    <color name="py_blue">#8A2A78</color>
+    <color name="py_blue_dark">#500071</color>
+    <color name="py_blue_deep">#290044</color>
+    <color name="py_blue_light">#C867B6</color>
+
+    <color name="brand_primary">#EEE3B0</color>
+    <color name="brand_primary_dark">#EEE3B0</color>
+    <color name="brand_on_primary_dark">#0C0014</color>
 
     <!-- Verdicts -->
-    <color name="verdict_success">#2F9E5B</color>
-    <color name="verdict_fail">#D9822B</color>
-    <color name="verdict_error">#D64545</color>
-    <color name="verdict_timeout">#6B7280</color>
+    <color name="verdict_success">#6EE7B7</color>
+    <color name="verdict_fail">#F5C26B</color>
+    <color name="verdict_error">#FF6B8A</color>
+    <color name="verdict_timeout">#A895BA</color>
 
     <!-- Difficulties -->
-    <color name="diff_easy">#2F9E5B</color>
-    <color name="diff_medium">#D9822B</color>
-    <color name="diff_hard">#D64545</color>
+    <color name="diff_easy">#6EE7B7</color>
+    <color name="diff_medium">#F5C26B</color>
+    <color name="diff_hard">#FF6B8A</color>
 
-    <!-- Code editor (dark in both themes, like a terminal) -->
-    <color name="editor_bg">#1E1E2E</color>
-    <color name="editor_text">#E6E6F0</color>
-    <color name="editor_hint">#80E6E6F0</color>
+    <!-- Code editor -->
+    <color name="editor_bg">#0A0010</color>
+    <color name="editor_gutter">#12061C</color>
+    <color name="editor_text">#F2ECF8</color>
+    <color name="editor_hint">#66A895BA</color>
+    <color name="code_keyword">#E58AD6</color>
+    <color name="code_builtin">#9CC4FF</color>
+    <color name="code_string">#EEE3B0</color>
+    <color name="code_number">#8FE0B5</color>
+    <color name="code_comment">#7D6A93</color>
+    <color name="code_error_line">#40FF6B8A</color>
+    <color name="code_current_line">#14FFFFFF</color>
 
     <!-- Leaderboard -->
-    <color name="rank_gold">#D4A017</color>
-    <color name="rank_silver">#9CA3AF</color>
-    <color name="rank_bronze">#B7791F</color>
-    <color name="highlight_me">#334F46E5</color>
+    <color name="rank_gold">#EEE3B0</color>
+    <color name="rank_silver">#C9BCD8</color>
+    <color name="rank_bronze">#D98AA0</color>
+    <color name="highlight_me">#2EEEE3B0</color>
+
+    <!-- Hero gradients and accents -->
+    <color name="hero_start">#500071</color>
+    <color name="hero_end">#8A2A78</color>
+    <color name="cta_start">#F5EDC8</color>
+    <color name="cta_end">#EEE3B0</color>
+    <color name="glow_yellow">#33EEE3B0</color>
 </resources>

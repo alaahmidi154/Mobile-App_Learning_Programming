@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
 namespace CodeQuest.Api.Models;
@@ -16,6 +16,9 @@ public partial class Mission
     public int Xp { get; set; }
 
     public string CodeDepart { get; set; } = null!;
+
+    /// <summary>Optional hint shown to the player (column "Indice", may be NULL).</summary>
+    public string? Indice { get; set; }
 
     public virtual ICollection<Soumission> Soumissions { get; set; } = new List<Soumission>();
 

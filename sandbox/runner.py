@@ -24,6 +24,7 @@ Exit codes:
 import argparse
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -198,6 +199,12 @@ def error_message(err: str, rc) -> str:
     return "Erreur d'execution."
 
 
+def error_line(err: str):
+    """Line number (in the student's main.py) of the last traceback frame, or None."""
+    found = re.findall(r'File "[^"]*main\.py", line (\d+)', err)
+    return int(found[-1]) if found else None
+
+
 def grade(code: str, tests: list) -> dict:
     if not tests:
         raise SandboxUnavailable("Aucun test fourni.")
@@ -220,7 +227,7 @@ def grade(code: str, tests: list) -> dict:
         elapsed = max(r[3] for r in runs)
 
         # The verdict is decided by the FIRST test (in order) that does not pass.
-        for t, (kind, out, err, _ms, rc) in zip(tests, runs):
+        for idx, (t, (kind, out, err, _ms, rc)) in enumerate(zip(tests, runs)):
             if kind == "timeout":
                 return {"verdict": TEMPS, "tempsExecutionMs": elapsed,
                         "message": f"Limite de {TIME_LIMIT_S}s depassee."}
@@ -229,10 +236,12 @@ def grade(code: str, tests: list) -> dict:
                         "message": "Sortie trop volumineuse."}
             if kind == "error":
                 return {"verdict": ERREUR, "tempsExecutionMs": elapsed,
-                        "message": error_message(err, rc)}
+                        "message": error_message(err, rc),
+                        "ligne": error_line(err), "testIndex": idx}
             if normalize(out) != normalize(t.get("sortieAttendue", "")):
                 return {"verdict": ECHOUE, "tempsExecutionMs": elapsed,
-                        "message": "Sortie incorrecte."}
+                        "message": "Sortie incorrecte.",
+                        "testIndex": idx, "obtenu": normalize(out)[:300]}
         return {"verdict": REUSSI, "tempsExecutionMs": elapsed, "message": "Bravo !"}
     finally:
         shutil.rmtree(workdir, ignore_errors=True)

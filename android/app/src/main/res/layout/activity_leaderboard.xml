@@ -1,28 +1,267 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:padding="16dp">
+    android:orientation="vertical">
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="12dp"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="16dp"
         android:text="Classement"
-        android:textSize="24sp"
+        android:textColor="@color/text_primary"
+        android:textSize="28sp"
         android:textStyle="bold" />
 
     <TextView
-        android:id="@+id/txtLeaderboardStatus"
+        android:id="@+id/txtMyRank"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textColor="?attr/colorError" />
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="2dp"
+        android:fontFamily="@font/jetbrains_mono"
+        android:text="Classement"
+        android:textColor="@color/p_cream"
+        android:textSize="13sp" />
 
-    <ListView
-        android:id="@+id/listViewLeaderboard"
+    <TextView
+        android:id="@+id/txtLeaderboardStatus"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:divider="?attr/colorOutlineVariant"
-        android:dividerHeight="1dp" />
+        android:layout_height="wrap_content"
+        android:paddingStart="20dp"
+        android:paddingEnd="20dp"
+        android:textColor="@color/verdict_error" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:gravity="bottom|center_horizontal"
+        android:orientation="horizontal"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp">
+
+        <LinearLayout
+            android:id="@+id/podium2"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="4dp"
+            android:layout_marginEnd="4dp"
+            android:layout_weight="1"
+            android:gravity="center_horizontal"
+            android:orientation="vertical"
+            android:visibility="invisible">
+
+            <TextView
+                android:id="@+id/podium2Avatar"
+                android:layout_width="56dp"
+                android:layout_height="56dp"
+                android:background="@drawable/bg_avatar_ring"
+                android:gravity="center"
+                android:text="A"
+                android:textColor="@color/white"
+                android:textSize="23sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/podium2Name"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:ellipsize="end"
+                android:gravity="center"
+                android:maxLines="1"
+                android:text="-"
+                android:textColor="@color/text_primary"
+                android:textSize="13sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/podium2Xp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:background="@drawable/bg_xp_pill"
+                android:fontFamily="@font/jetbrains_mono"
+                android:paddingStart="10dp"
+                android:paddingTop="3dp"
+                android:paddingEnd="10dp"
+                android:paddingBottom="3dp"
+                android:text="0 XP"
+                android:textColor="@color/p_deep"
+                android:textSize="12sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="86dp"
+                android:layout_marginTop="10dp"
+                android:background="@drawable/bg_podium"
+                android:fontFamily="@font/jetbrains_mono"
+                android:gravity="center_horizontal"
+                android:paddingTop="12dp"
+                android:text="2"
+                android:textColor="#80EEE3B0"
+                android:textSize="28sp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/podium1"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="4dp"
+            android:layout_marginEnd="4dp"
+            android:layout_weight="1"
+            android:gravity="center_horizontal"
+            android:orientation="vertical"
+            android:visibility="invisible">
+
+            <ImageView
+                android:layout_width="26dp"
+                android:layout_height="26dp"
+                android:layout_marginBottom="2dp"
+                android:importantForAccessibility="no"
+                android:src="@drawable/ic_nav_trophy"
+                app:tint="@color/rank_gold" />
+
+            <TextView
+                android:id="@+id/podium1Avatar"
+                android:layout_width="68dp"
+                android:layout_height="68dp"
+                android:background="@drawable/bg_avatar_ring"
+                android:gravity="center"
+                android:text="A"
+                android:textColor="@color/white"
+                android:textSize="28sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/podium1Name"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:ellipsize="end"
+                android:gravity="center"
+                android:maxLines="1"
+                android:text="-"
+                android:textColor="@color/text_primary"
+                android:textSize="13sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/podium1Xp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:background="@drawable/bg_xp_pill"
+                android:fontFamily="@font/jetbrains_mono"
+                android:paddingStart="10dp"
+                android:paddingTop="3dp"
+                android:paddingEnd="10dp"
+                android:paddingBottom="3dp"
+                android:text="0 XP"
+                android:textColor="@color/p_deep"
+                android:textSize="12sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="118dp"
+                android:layout_marginTop="10dp"
+                android:background="@drawable/bg_podium_first"
+                android:fontFamily="@font/jetbrains_mono"
+                android:gravity="center_horizontal"
+                android:paddingTop="12dp"
+                android:text="1"
+                android:textColor="#80EEE3B0"
+                android:textSize="34sp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/podium3"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="4dp"
+            android:layout_marginEnd="4dp"
+            android:layout_weight="1"
+            android:gravity="center_horizontal"
+            android:orientation="vertical"
+            android:visibility="invisible">
+
+            <TextView
+                android:id="@+id/podium3Avatar"
+                android:layout_width="56dp"
+                android:layout_height="56dp"
+                android:background="@drawable/bg_avatar_ring"
+                android:gravity="center"
+                android:text="A"
+                android:textColor="@color/white"
+                android:textSize="23sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/podium3Name"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:ellipsize="end"
+                android:gravity="center"
+                android:maxLines="1"
+                android:text="-"
+                android:textColor="@color/text_primary"
+                android:textSize="13sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/podium3Xp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:background="@drawable/bg_xp_pill"
+                android:fontFamily="@font/jetbrains_mono"
+                android:paddingStart="10dp"
+                android:paddingTop="3dp"
+                android:paddingEnd="10dp"
+                android:paddingBottom="3dp"
+                android:text="0 XP"
+                android:textColor="@color/p_deep"
+                android:textSize="12sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="66dp"
+                android:layout_marginTop="10dp"
+                android:background="@drawable/bg_podium"
+                android:fontFamily="@font/jetbrains_mono"
+                android:gravity="center_horizontal"
+                android:paddingTop="12dp"
+                android:text="3"
+                android:textColor="#80EEE3B0"
+                android:textSize="28sp" />
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:background="@drawable/bg_card_top"
+        android:paddingTop="6dp">
+
+        <ListView
+            android:id="@+id/listViewLeaderboard"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:divider="@color/border"
+            android:dividerHeight="1dp"
+            android:clipToPadding="false"
+            android:paddingBottom="8dp"
+            android:scrollbars="none" />
+    </FrameLayout>
+
+    <include layout="@layout/include_bottom_nav" />
 </LinearLayout>

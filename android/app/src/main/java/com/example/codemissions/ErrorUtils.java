@@ -17,6 +17,9 @@ public class ErrorUtils {
         if (r == null) {
             return "Serveur injoignable. Vérifiez la connexion et l'adresse du serveur.";
         }
+        if (r.statusCode == 403) {
+            return "Accès réservé aux administrateurs. Si tu viens d'être promu, déconnecte-toi puis reconnecte-toi.";
+        }
         try {
             String body = new String(r.data, "UTF-8");
             JSONObject json = new JSONObject(body);

@@ -13,6 +13,8 @@ builder.Services.AddDbContext<AppDbContext>(o =>
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 builder.Services.AddSingleton<ISandboxRunner, DockerSandboxRunner>();
+builder.Services.AddMemoryCache();                          // password-reset codes
+builder.Services.AddSingleton<IEmailSender, SmtpEmailSender>();
 
 var jwt = builder.Configuration.GetSection("Jwt");
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
